@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { createPrivateNote, updatePrivateNote, deletePrivateNote } from '@/utils/privateNotes';
 
@@ -34,17 +34,19 @@ export const PrivateNoteEditor: React.FC<PrivateNoteEditorProps> = ({
   onDeleteSuccess,
   profileUserId,
 }) => {
-  const getInitialContent = () => initialNote?.content || initialNote?.note_content || '';
-  const [noteContent, setNoteContent] = useState(getInitialContent());
+  const initialContent = initialNote?.content || initialNote?.note_content || '';
+  const initialNoteVersion = `${initialNote?.id ?? 'new'}\u0000${initialContent}\u0000${Boolean(initialNote)}`;
+  const [noteContent, setNoteContent] = useState(initialContent);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [syncedNoteVersion, setSyncedNoteVersion] = useState(initialNoteVersion);
 
-  // initialNote が外部から変更された場合に同期
-  useEffect(() => {
-    setNoteContent(getInitialContent());
+  if (syncedNoteVersion !== initialNoteVersion) {
+    setSyncedNoteVersion(initialNoteVersion);
+    setNoteContent(initialContent);
     setIsEditing(false);
-  }, [initialNote]);
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (e.target.value.length <= MAX_NOTE_LENGTH) {
@@ -155,11 +157,11 @@ export const PrivateNoteEditor: React.FC<PrivateNoteEditorProps> = ({
   }, [noteContent, initialNote, onSaveSuccess, profileUserId]);
 
   const handleCancel = useCallback(() => {
-    setNoteContent(getInitialContent()); // 元のコンテンツに戻す
+    setNoteContent(initialContent); // 元のコンテンツに戻す
     setIsEditing(false); // 表示モードに戻る
     setError(null);
     onCancel?.(); // 親コンポーネントに通知
-  }, [initialNote, onCancel]);
+  }, [initialContent, onCancel]);
 
   const handleDelete = useCallback(async () => {
     if (!initialNote?.id) return;
@@ -269,7 +271,7 @@ export const PrivateNoteEditor: React.FC<PrivateNoteEditorProps> = ({
       ) : hasNote ? (
         <div className="space-y-3">
           <p className="text-gray-800 text-sm whitespace-pre-wrap bg-gray-50/70 p-3 rounded border border-gray-100">
-            {noteContent || getInitialContent()}
+            {noteContent || initialContent}
           </p>
           <div className="flex justify-end items-center gap-2">
             <button

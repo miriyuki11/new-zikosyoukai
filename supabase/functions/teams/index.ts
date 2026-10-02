@@ -1,5 +1,4 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "../../../types/supabase.ts";
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -78,8 +77,8 @@ Deno.serve(async (req: Request) => {
 
   const adminClient = supabaseServiceRoleKey
     ? createClient(supabaseUrl, supabaseServiceRoleKey, {
-        auth: { persistSession: false },
-      })
+      auth: { persistSession: false },
+    })
     : null;
 
   const {

@@ -105,15 +105,16 @@ Deno.serve(async (request: Request) => {
                         const slug = decodeURIComponent(match[1]);
                         const { data: card } = await supabase
                             .from("public_profile_cards")
-                            .select("slug, self_introduction, skills")
+                            .select("slug, full_name, avatar_url, self_introduction, skills")
                             .eq("slug", slug)
                             .maybeSingle();
 
                         if (card) {
                             unfurls[link.url] = {
                                 color: "#36a64f",
-                                title: `📇 ${card.slug} のプロフィールカード`,
+                                title: `📇 ${card.full_name || card.slug} のプロフィールカード`,
                                 text: card.self_introduction ?? card.skills ?? "",
+                                ...(card.avatar_url ? { image_url: card.avatar_url } : {}),
                             };
                         }
                     }

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import PrivateNote, { PrivateNoteItem } from '@/src/components/PrivateNote/PrivateNote';
 import { supabase } from '@/lib/supabase';
 import { getPrivateNotes, createPrivateNote } from '@/utils/privateNotes';
@@ -94,7 +95,7 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
   }, [targetUserId]);
 
   useEffect(() => {
-    fetchPrivateNotes();
+    void Promise.resolve().then(fetchPrivateNotes);
   }, [fetchPrivateNotes]);
 
   useEffect(() => {
@@ -201,9 +202,12 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
       {/* ユーザー情報ヘッダー */}
       <div className="flex items-center space-x-4 mb-6">
         {avatarUrl ? (
-          <img
+          <Image
             src={avatarUrl}
             alt={userName}
+            width={56}
+            height={56}
+            unoptimized
             className="w-14 h-14 rounded-full object-cover border border-gray-200"
           />
         ) : (

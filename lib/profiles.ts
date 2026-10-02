@@ -74,6 +74,8 @@ export type ProfileResponse<T> = {
 };
 
 export const PUBLIC_PROFILE_FIELD_LABELS = {
+  full_name: "名前",
+  avatar_url: "プロフィール画像",
   self_introduction: "自己紹介",
   skills: "スキル・得意分野",
   communication_style: "コミュニケーションスタイル",
@@ -86,6 +88,8 @@ export type PublicProfileField = keyof typeof PUBLIC_PROFILE_FIELD_LABELS;
 
 export type PublicProfileCard = {
   slug: string;
+  full_name: string | null;
+  avatar_url: string | null;
   self_introduction: string | null;
   skills: string | null;
   communication_style: string | null;
@@ -115,7 +119,7 @@ export async function getPublicProfileBySlug(
   const { data, error } = await anonClient
     .from("public_profile_cards")
     .select(
-      "slug, self_introduction, skills, communication_style, consultation_style, free_description, realtime_status"
+      "slug, full_name, avatar_url, self_introduction, skills, communication_style, consultation_style, free_description, realtime_status"
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -131,6 +135,8 @@ export async function getPublicProfileBySlug(
 
   return {
     slug: data.slug,
+    full_name: data.full_name,
+    avatar_url: data.avatar_url,
     self_introduction: data.self_introduction,
     skills: data.skills,
     communication_style: data.communication_style,

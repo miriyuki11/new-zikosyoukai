@@ -1,11 +1,26 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+export function shouldBypassAuth(pathname: string) {
+    const isPublicProfile = /^\/profile\/[^/]+$/.test(pathname)
+        && pathname !== "/profile/settings"
+        && pathname !== "/profile/edit";
+    const isPublicTeam = /^\/team\/[^/]+$/.test(pathname);
+    const isPublicTeamsProfile = /^\/teams\/[^/]+$/.test(pathname)
+        && pathname !== "/teams/create";
+
+    return isPublicProfile || isPublicTeam || isPublicTeamsProfile;
+}
+
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // 公開プロフィールページ /profile/<username> は認証不要
-    if (/^\/profile\/[^/]+$/.test(pathname)) {
+    if (shouldBypassAuth(pathname)) {
+        return NextResponse.next({ request });
+    }
+
+    // 静的画像やアセット
+    if (/\.(jpg|jpeg|png|gif|svg|ico|webp)$/i.test(pathname) || pathname.startsWith('/images/')) {
         return NextResponse.next({ request });
     }
 
@@ -59,6 +74,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
     matcher: [
-        "/((?!api|login|auth|test-auth|_next/static|_next/image|favicon.ico).*)",
+        "/((?!api|login|auth|test-auth|test-profile-card|_next/static|_next/image|images|favicon.ico).*)",
     ],
 };

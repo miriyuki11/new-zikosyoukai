@@ -296,57 +296,6 @@ export default function Home() {
   
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <div className="workspace-title">
-          <div>
-            Team Workspace
-            <div className="workspace-subtitle">
-              ワークスペース
-            </div>
-          </div>
-          <span>⌄</span>
-        </div>
-        <div className="side-section-title">
-          チャンネル
-        </div>
-        <div className="side-item">
-          # general
-        </div>
-        <div className="side-item">
-          # development
-        </div>
-        <div className="side-item">
-          # design
-        </div>
-        <div className="side-section-title">
-          チーム
-        </div>
-        <div className="side-item active">
-          🟢 開発チーム
-        </div>
-        <div className="side-item">
-          🔵 デザインチーム
-        </div>
-        <div className="side-item">
-          🟣 営業チーム
-        </div>
-        <button
-          className="side-item create-team"
-          onClick={createNewTeam}
-        >
-          ＋ チームを作成
-        </button>
-        <div className="side-section-title">
-          個人設定
-        </div>
-        <Link
-          href="/profile"
-          className="side-item"
-          style={{ textDecoration: "none" }}
-        >
-          👤 マイプロフィール
-        </Link>
-      </aside>
       <main className="main">
         <header className="topbar">
           <span>⚙️</span>
@@ -368,6 +317,9 @@ export default function Home() {
                 チームの基本情報とメンバーを管理します。
               </p>
             </div>
+            <button type="button" className="btn" onClick={createNewTeam}>
+              チームを作成
+            </button>
           </div>
           {/* 個人メモUIコンポーネント (ステップ1 動作確認用) */}
           <div className="mb-6 max-w-md">
@@ -490,9 +442,13 @@ export default function Home() {
                             <div className="member-name">
                               {member.name}
                             </div>
-                            <div className="member-email">
+                            <Link
+                              href="/profile/edit"
+                              className="member-email"
+                              title="クリックしてプロフィールカードを作成・編集"
+                            >
                               {member.email}
-                            </div>
+                            </Link>
                           </div>
                           <button
                             className="btn"
@@ -543,9 +499,13 @@ export default function Home() {
                           <div className="member-name">
                             {member.name}
                           </div>
-                          <div className="member-email">
+                          <Link
+                            href="/profile/edit"
+                            className="member-email"
+                            title="クリックしてプロフィールカードを作成・編集"
+                          >
                             {member.email}
-                          </div>
+                          </Link>
                         </div>
                         <span
                           style={{

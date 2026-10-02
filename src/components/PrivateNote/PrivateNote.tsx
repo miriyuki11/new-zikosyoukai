@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { deletePrivateNote, updatePrivateNote } from '@/utils/privateNotes';
 
@@ -39,21 +39,22 @@ export const PrivateNote: React.FC<PrivateNoteProps> = ({
   const isPlaceholder = !note;
   const displayedNote = note ?? defaultPlaceholderNote;
   const noteText = displayedNote.content || displayedNote.note_content || '';
+  const noteVersion = `${note?.id ?? 'preview'}\u0000${noteText}\u0000${Boolean(note)}`;
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(noteText);
   const [originalContent, setOriginalContent] = useState(noteText); // キャンセル用
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [syncedNoteVersion, setSyncedNoteVersion] = useState(noteVersion);
 
-  // note.content が変更された場合に、editedContentとoriginalContentを更新
-  useEffect(() => {
-    const text = displayedNote.content || displayedNote.note_content || '';
-    setEditedContent(text);
-    setOriginalContent(text);
+  if (syncedNoteVersion !== noteVersion) {
+    setSyncedNoteVersion(noteVersion);
+    setEditedContent(noteText);
+    setOriginalContent(noteText);
     if (!note) {
       setIsEditing(false);
     }
-  }, [displayedNote.content, displayedNote.note_content, note]);
+  }
 
   const handleEditClick = () => {
     setIsEditing(true);

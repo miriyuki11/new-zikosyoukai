@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { getTestCredentials } from "./test-credentials.mjs";
 
 const SUPABASE_URL = "https://ccarnmeqioneyfnjrlva.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_PVvn9xKKuAaLg2Ew5AzPgg_q2x3-5Wk";
@@ -7,9 +8,9 @@ const FUNCTIONS_BASE_URL = `${SUPABASE_URL}/functions/v1`;
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const CREDENTIALS = {
-  userA: { email: "sapo_test_user_a@gmail.com", password: "Password123!" },
-  userB: { email: "user1@example.com", password: "Password123!" },
-  userC: { email: "user2@example.com", password: "Password123!" },
+  userA: getTestCredentials("A"),
+  userB: getTestCredentials("B"),
+  userC: getTestCredentials("C"),
 };
 
 async function login(email, password) {

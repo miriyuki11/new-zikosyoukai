@@ -30,6 +30,8 @@ export function jsonResponse(data: unknown, status = 200) {
 // プロフィールバリデーションスキーマ (Zod)
 // DBの profile_cards テーブルのカラムと、フロントエンドで使いやすい基本項目（bio, username, avatar_url等）をサポート
 export const PUBLIC_FIELD_KEYS = [
+  "full_name",
+  "avatar_url",
   "self_introduction",
   "skills",
   "communication_style",
@@ -90,10 +92,10 @@ function formatProfileTags(profileCardTags: unknown) {
         category_name: (categoryObj?.name as string | null) ?? null,
         category: categoryObj
           ? {
-              id: String(categoryObj.id ?? ""),
-              name: String(categoryObj.name ?? ""),
-              description: (categoryObj.description as string | null) ?? null,
-            }
+            id: String(categoryObj.id ?? ""),
+            name: String(categoryObj.name ?? ""),
+            description: (categoryObj.description as string | null) ?? null,
+          }
           : null,
       };
     })
@@ -201,6 +203,8 @@ Deno.serve(async (req: Request) => {
           .select(`
             id,
             user_id,
+            full_name,
+            avatar_url,
             self_introduction,
             skills,
             communication_style,
@@ -270,10 +274,11 @@ Deno.serve(async (req: Request) => {
               userData.user.user_metadata?.username ||
               userData.user.email?.split("@")[0],
             full_name:
+              card.full_name ||
               userData.user.user_metadata?.full_name ||
               userData.user.user_metadata?.name ||
               null,
-            avatar_url: userData.user.user_metadata?.avatar_url || null,
+            avatar_url: card.avatar_url || userData.user.user_metadata?.avatar_url || null,
           },
           status: "ok",
         }, 200);
@@ -317,6 +322,8 @@ Deno.serve(async (req: Request) => {
           const { error: updateError } = await supabase
             .from("profile_cards")
             .update({
+              ...(data.full_name !== undefined ? { full_name: data.full_name } : {}),
+              ...(data.avatar_url !== undefined ? { avatar_url: data.avatar_url } : {}),
               self_introduction: selfIntroduction,
               skills: data.skills ?? null,
               communication_style: data.communication_style ?? null,
@@ -341,6 +348,8 @@ Deno.serve(async (req: Request) => {
             .from("profile_cards")
             .insert({
               user_id: currentUserId,
+              full_name: data.full_name ?? null,
+              avatar_url: data.avatar_url ?? null,
               self_introduction: selfIntroduction,
               skills: data.skills ?? null,
               communication_style: data.communication_style ?? null,

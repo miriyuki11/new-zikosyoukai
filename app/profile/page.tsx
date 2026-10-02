@@ -10,7 +10,6 @@ import {
   type PublicProfileField,
 } from "@/lib/profiles";
 import { supabase } from "@/lib/supabase";
-import { SlackConnectButton } from "@/src/components/integrations/SlackConnectButton";
 
 const PUBLIC_FIELD_OPTIONS = Object.keys(
   PUBLIC_PROFILE_FIELD_LABELS
@@ -23,8 +22,6 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
   const toastTimeoutRef = useRef<number | null>(null);
-
-  const [email, setEmail] = useState<string | null>(null);
 
   // フォームステート
   const [selfIntroduction, setSelfIntroduction] = useState("");
@@ -75,8 +72,6 @@ export default function ProfilePage() {
           setLoading(false);
           return;
         }
-
-        setEmail(user.email ?? null);
 
         const { data: profile, error: fetchErr } = await getProfile();
 
@@ -192,26 +187,6 @@ export default function ProfilePage() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <div className="workspace-title">
-          <div>
-            Team Workspace
-            <div className="workspace-subtitle">ワークスペース</div>
-          </div>
-        </div>
-
-        <div className="side-section-title">メニュー</div>
-        <Link href="/" className="side-item" style={{ textDecoration: "none" }}>
-          🏠 チーム設定
-        </Link>
-        <div className="side-item active">👤 マイプロフィール</div>
-
-        <div className="side-section-title">アカウント</div>
-        <div className="side-item" style={{ fontSize: 13, color: "#cbd5e1" }}>
-          {email || "ログイン中"}
-        </div>
-      </aside>
-
       <main className="main">
         <header className="topbar">
           <span>👤</span>
@@ -233,14 +208,6 @@ export default function ProfilePage() {
               </p>
             </div>
           </div>
-
-          <section className="card" aria-labelledby="slack-connection-heading">
-            <h2 id="slack-connection-heading">Slack連携</h2>
-            <p className="card-description">
-              Slackアカウントを連携して、Slackからプロフィールカードを参照できるようにします。
-            </p>
-            <SlackConnectButton />
-          </section>
 
           {loading ? (
             <div className="card">

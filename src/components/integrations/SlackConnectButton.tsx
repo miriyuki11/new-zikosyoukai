@@ -9,7 +9,7 @@ type SlackOAuthStartResponse = {
     authorize_url?: unknown;
 };
 
-export function SlackConnectButton() {
+export function SlackConnectButton({ className = '' }: { className?: string }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -71,7 +71,13 @@ export function SlackConnectButton() {
 
     return (
         <div>
-            <Button type="button" onClick={startSlackOAuth} disabled={loading}>
+            <Button
+                type="button"
+                variant="ghost"
+                className={className}
+                onClick={startSlackOAuth}
+                disabled={loading}
+            >
                 {loading ? (
                     <LoaderCircle aria-hidden="true" className="animate-spin" />
                 ) : (

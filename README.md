@@ -14,6 +14,13 @@ npm run dev
 
 ローカル開発用の `.env` は Git 管理しないでください。
 
+検証スクリプトでログインするテストユーザーの認証情報も、環境変数で設定してください。
+ユーザーAには `SUPABASE_TEST_EMAIL` と `SUPABASE_TEST_PASSWORD` を使用します。
+複数ユーザーが必要なスクリプトでは、ユーザーB/Cにそれぞれ
+`SUPABASE_TEST_USER_B_EMAIL` / `SUPABASE_TEST_USER_B_PASSWORD`、
+`SUPABASE_TEST_USER_C_EMAIL` / `SUPABASE_TEST_USER_C_PASSWORD` を設定します。
+これらの値は `.env` などの Git 管理外ファイルに保存してください。
+
 ## Edge Functions デプロイ時の環境変数
 
 Edge Functions をデプロイする際の環境変数は、

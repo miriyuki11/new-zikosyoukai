@@ -72,6 +72,20 @@ describe("privateNotes CRUD functions", () => {
       expect(eqMock).toHaveBeenCalledWith("target_user_id", "target-specific");
       expect(result).toEqual(mockNotes);
     });
+
+    it("returns empty array gracefully when db returns invalid uuid error (e.g. mock user-123)", async () => {
+      const eqMock = vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'invalid input syntax for type uuid: "user-123"', code: "22P02" },
+      });
+      const orderMock = vi.fn().mockReturnValue({ eq: eqMock });
+      const selectMock = vi.fn().mockReturnValue({ order: orderMock });
+      vi.mocked(supabase.from).mockReturnValue({ select: selectMock } as never);
+
+      const result = await getPrivateNotes("user-123");
+
+      expect(result).toEqual([]);
+    });
   });
 
   describe("createPrivateNote", () => {
