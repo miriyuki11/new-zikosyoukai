@@ -218,3 +218,56 @@ supabase functions serve --no-verify-jwt
 更新は `note_id` と `note_content` を POST し、削除は `note_id` を POST します。成功時は更新が 200、削除が 200 になります。別ユーザーの JWT で同じ `note_id` を操作すると、`Note not found or you do not have permission...` の 404 が返ります。
 
 RLS の更新・削除ポリシーは `supabase/migrations/20260927000000_add_private_note_update_delete_policies.sql` に追加済みです。
+
+## Slack 連携のセットアップ
+
+### Slack App の作成
+
+1. Slack API の Your Apps で `Create New App` > `From an app manifest` を選びます。
+2. `supabase/slack-app-manifest.example.json` を開き、最初の `{` から最後の `}` までをSlackのJSON欄に貼り付けます。Markdownのコードフェンスは貼り付けません。
+3. 貼り付ける前に、JSON内の `your-project-ref` をSupabaseのProject Refに置き換えます。OAuth Redirect URL、Slash Command、Event SubscriptionsのURLもこれで設定されます。
+
+各URLは次の形式です。
+
+```text
+https://<PROJECT_REF>.supabase.co/functions/v1/slack-oauth
+https://<PROJECT_REF>.supabase.co/functions/v1/slack-slash-command
+https://<PROJECT_REF>.supabase.co/functions/v1/slack-link-unfurling
+```
+
+Slack AppのSigning SecretとBasic InformationのClient ID / Client Secretを控えます。
+
+### Supabaseへの反映
+
+リポジトリのルートで対象プロジェクトをリンクし、migrationを適用します。
+
+```bash
+supabase link --project-ref <PROJECT_REF>
+supabase db push
+```
+
+Slack Appの資格情報をSupabase secretsに登録します。`SLACK_REDIRECT_URI` はSlack Appに登録したOAuth Redirect URLと完全一致させてください。
+
+```bash
+supabase secrets set "SLACK_CLIENT_ID=<SLACK_CLIENT_ID>" "SLACK_CLIENT_SECRET=<SLACK_CLIENT_SECRET>" "SLACK_REDIRECT_URI=https://<PROJECT_REF>.supabase.co/functions/v1/slack-oauth" "SLACK_SIGNING_SECRET=<SLACK_SIGNING_SECRET>" --project-ref <PROJECT_REF>
+```
+
+Edge Functionsをデプロイします。
+
+```bash
+supabase functions deploy slack-oauth --no-verify-jwt --project-ref <PROJECT_REF>
+supabase functions deploy slack-slash-command --no-verify-jwt --project-ref <PROJECT_REF>
+supabase functions deploy slack-link-unfurling --no-verify-jwt --project-ref <PROJECT_REF>
+```
+
+これらの関数はSupabase JWTではなく、OAuth stateまたはSlack署名を関数内で検証します。`supabase/config.toml` でもJWT検証を無効にしています。OAuth開始リクエストは関数内でログインユーザーのJWTを検証します。
+
+### 動作確認
+
+1. アプリにログインしてサイドバーの「Slackと連携する」から、テスト用Slackワークスペースにアプリをインストールします。完了画面が表示されたら元のアプリに戻ります。
+2. Slack連携を試す各ユーザーも、アプリにログインして同じワークスペースと連携します。
+3. 対象ユーザーがプロフィールを作成し、公開を有効にして公開項目を設定します。
+4. Slackで `/intro` を実行すると自分の公開プロフィールが表示されます。別のユーザーを表示する場合は `/intro @ユーザー名` を使います。対象ユーザーもSlack連携済みで、プロフィールを公開している必要があります。
+5. 公開プロフィールURLをチャンネルに投稿すると、プロフィールのリンクプレビューが表示されます。
+
+公開プロフィールURLのプレビューには、Slack AppのEvent Subscriptionsで `link_shared` が有効である必要があります。ローカルアプリからOAuthを開始する場合は `http://localhost:3000`、デプロイ済みアプリからの場合は `https://introcard-one.vercel.app` がCORS許可済みです。

@@ -1,0 +1,57 @@
+{
+  "_metadata": {
+    "major_version": 1,
+    "minor_version": 1
+  },
+  "display_information": {
+    "name": "Introcard",
+    "description": "Share public profile cards in Slack.",
+    "background_color": "#176b55"
+  },
+  "features": {
+    "bot_user": {
+      "display_name": "Introcard",
+      "always_online": false
+    },
+    "slash_commands": [
+      {
+        "command": "/intro",
+        "description": "Show your public profile, or specify another user.",
+        "usage_hint": "optional: @username",
+        "should_escape": false,
+        "url": "https://your-project-ref.supabase.co/functions/v1/slack-slash-command"
+      }
+    ],
+    "unfurl_domains": [
+      "introcard-one.vercel.app"
+    ]
+  },
+  "oauth_config": {
+    "redirect_urls": [
+      "https://your-project-ref.supabase.co/functions/v1/slack-oauth"
+    ],
+    "scopes": {
+      "bot": [
+        "commands",
+        "links:read",
+        "links:write",
+        "users:read"
+      ],
+      "user": [
+        "users:read"
+      ]
+    }
+  },
+  "settings": {
+    "event_subscriptions": {
+      "request_url": "https://your-project-ref.supabase.co/functions/v1/slack-link-unfurling",
+      "bot_events": [
+        "link_shared"
+      ]
+    },
+    "org_deploy_enabled": false,
+    "socket_mode_enabled": false,
+    "is_hosted": false,
+    "token_rotation_enabled": false
+  }
+}

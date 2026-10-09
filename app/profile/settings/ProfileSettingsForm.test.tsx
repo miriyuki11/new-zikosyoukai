@@ -233,7 +233,14 @@ describe('ProfileSettingsForm (Step 3 - タグ選択UIと統合)', () => {
           hobby_tags: MOCK_PROFILE_DATA.hobbyTags,
           slug: 'sato-hanako',
           is_public: true,
-          public_fields: ['full_name', 'avatar_url', 'self_introduction', 'communication_style'],
+          public_fields: [
+            'full_name',
+            'avatar_url',
+            'self_introduction',
+            'communication_style',
+            'work_style_tags',
+            'hobby_tags',
+          ],
         })
       );
       expect(supabaseMocks.update).toHaveBeenCalledWith(
@@ -281,7 +288,13 @@ describe('ProfileSettingsForm (Step 3 - タグ選択UIと統合)', () => {
           user_id: 'test-user-id',
           slug: 'new-profile',
           is_public: true,
-          public_fields: ['full_name', 'avatar_url', 'self_introduction', 'communication_style'],
+          public_fields: [
+            'full_name',
+            'avatar_url',
+            'self_introduction',
+            'communication_style',
+            'hobby_tags',
+          ],
         })
       );
       expect(screen.getByRole('status').textContent).toContain(

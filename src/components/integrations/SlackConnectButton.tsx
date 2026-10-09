@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowUpRight, LoaderCircle } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { supabase } from "@/lib/supabase";
@@ -12,6 +12,45 @@ type SlackOAuthStartResponse = {
 export function SlackConnectButton({ className = '' }: { className?: string }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [connectionCount, setConnectionCount] = useState<number | null>(null);
+    const [connectionError, setConnectionError] = useState(false);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        async function loadConnections() {
+            const {
+                data: { user },
+                error: userError,
+            } = await supabase.auth.getUser();
+
+            if (userError || !user) {
+                if (!cancelled) setConnectionCount(0);
+                return;
+            }
+
+            const { data, error: queryError } = await supabase
+                .from("user_slack_connections")
+                .select("slack_team_id")
+                .eq("user_id", user.id);
+
+            if (cancelled) return;
+            if (queryError) {
+                setConnectionError(true);
+                return;
+            }
+            setConnectionCount(data?.length ?? 0);
+        }
+
+        void loadConnections().catch((cause: unknown) => {
+            console.error("Failed to load Slack connections:", cause);
+            if (!cancelled) setConnectionError(true);
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     async function startSlackOAuth() {
         setLoading(true);
@@ -71,6 +110,18 @@ export function SlackConnectButton({ className = '' }: { className?: string }) {
 
     return (
         <div>
+            {connectionCount !== null && (
+                <p className="mb-1 px-2.5 text-xs opacity-80" role="status">
+                    {connectionCount > 0
+                        ? `Slack連携済み${connectionCount > 1 ? `（${connectionCount}ワークスペース）` : ""}`
+                        : "Slack未連携"}
+                </p>
+            )}
+            {connectionError && (
+                <p className="mb-1 px-2.5 text-xs text-destructive" role="alert">
+                    Slack連携状態を確認できませんでした。
+                </p>
+            )}
             <Button
                 type="button"
                 variant="ghost"
@@ -83,7 +134,11 @@ export function SlackConnectButton({ className = '' }: { className?: string }) {
                 ) : (
                     <ArrowUpRight aria-hidden="true" />
                 )}
-                {loading ? "Slackに接続中..." : "Slackと連携する"}
+                {loading
+                    ? "Slackに接続中..."
+                    : connectionCount && connectionCount > 0
+                    ? "Slackを追加連携"
+                    : "Slackと連携する"}
             </Button>
             {error && (
                 <p className="mt-2 text-sm text-destructive" role="alert">

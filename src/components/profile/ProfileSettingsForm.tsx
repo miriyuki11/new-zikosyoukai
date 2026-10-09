@@ -150,7 +150,14 @@ export const ProfileSettingsForm: React.FC<ProfileSettingsFormProps> = ({ initia
         slug: slug || null,
         is_public: formData.isPublic,
         public_fields: formData.isPublic
-          ? ['full_name', 'avatar_url', 'self_introduction', 'communication_style']
+          ? [
+              'full_name',
+              'avatar_url',
+              'self_introduction',
+              'communication_style',
+              ...(formData.workStyleTags.length > 0 ? ['work_style_tags'] : []),
+              ...(formData.hobbyTags.length > 0 ? ['hobby_tags'] : []),
+            ]
           : [],
       };
 
