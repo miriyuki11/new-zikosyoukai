@@ -30,6 +30,10 @@ describe('AppSidebarLayout', () => {
     expect(createProfileLink.getAttribute('href')).toBe('/profile/settings');
     expect(screen.getByRole('button', { name: /Slackと連携する/i })).toBeDefined();
     expect(container.querySelectorAll('a, button')).toHaveLength(3);
+    expect(screen.queryByText('チャンネル')).toBeNull();
+    expect(screen.queryByText(/# (general|development|design)/)).toBeNull();
+    expect(screen.queryByText('チーム')).toBeNull();
+    expect(screen.queryByText(/開発チーム|デザインチーム|営業チーム/)).toBeNull();
     expect(screen.queryByText('マイプロフィール')).toBeNull();
   });
 

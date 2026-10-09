@@ -5,11 +5,8 @@ export function shouldBypassAuth(pathname: string) {
     const isPublicProfile = /^\/profile\/[^/]+$/.test(pathname)
         && pathname !== "/profile/settings"
         && pathname !== "/profile/edit";
-    const isPublicTeam = /^\/team\/[^/]+$/.test(pathname);
-    const isPublicTeamsProfile = /^\/teams\/[^/]+$/.test(pathname)
-        && pathname !== "/teams/create";
 
-    return isPublicProfile || isPublicTeam || isPublicTeamsProfile;
+    return isPublicProfile;
 }
 
 export async function proxy(request: NextRequest) {

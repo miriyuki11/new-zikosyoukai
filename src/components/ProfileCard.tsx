@@ -17,15 +17,6 @@ export interface Tag {
   color_hex?: string | null;
 }
 
-// チーム情報の型定義
-export interface TeamInfo {
-  id: string;
-  name: string;
-  description?: string | null;
-  owner_id?: string;
-  created_at?: string;
-}
-
 // プロフィールデータの型定義
 export interface Profile {
   id?: string;
@@ -44,9 +35,6 @@ export interface Profile {
   realtime_status?: string | null;
   realtimeStatus?: string;
   tags?: Tag[];
-  team_id?: string | null;
-  teamId?: string | null;
-  team?: TeamInfo | null;
   avatar_url?: string | null;
   avatarUrl?: string | null;
   email?: string;
@@ -56,7 +44,6 @@ export interface Profile {
 export interface ProfileCardProps {
   targetUserId?: string; // 表示対象のユーザーID
   userId?: string; // 互換用 (targetUserIdと同じ)
-  teamId?: string | null; // 対象ユーザーが所属するチームID (オプション)
   profile?: Profile; // 事前データまたはフォールバック
   profileId?: string;
   profileName?: string;
@@ -73,9 +60,7 @@ type ProfileCardQueryResult = {
   communication_style: string | null;
   consultation_style: string | null;
   realtime_status: string | null;
-  team_id: string | null;
   profile_card_tags: unknown;
-  teams: unknown;
 };
 
 function getFirstRecord(value: unknown): Record<string, unknown> | null {
@@ -106,7 +91,6 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   targetUserId: propTargetUserId,
   userId: propUserId,
   profileId: propProfileId,
-  teamId: propTeamId,
   profile: initialProfile,
   profileName,
   avatarUrl: propAvatarUrl,
@@ -127,9 +111,8 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   // 閲覧者ステート
   const [viewerUserId, setViewerUserId] = useState<string | null>(null);
 
-  // 個人メモとチーム情報ステート (ステップ4)
+  // 個人メモステート
   const [privateNote, setPrivateNote] = useState<PrivateNoteItem | null>(null);
-  const [teamInfo, setTeamInfo] = useState<TeamInfo | null>(null);
   const [loadingAdditionalData, setLoadingAdditionalData] = useState<boolean>(true);
   const [errorAdditionalData, setErrorAdditionalData] = useState<string | null>(null);
 
@@ -225,12 +208,6 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
                 consultation_style,
                 free_description,
                 realtime_status,
-                team_id,
-                teams:team_id (
-                  id,
-                  name,
-                  description
-                ),
                 profile_card_tags (
                   profile_tag_id,
                   profile_tags (
@@ -266,7 +243,6 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
                     communication_style: pData.communication_style,
                     consultation_style: pData.consultation_style,
                     realtime_status: pData.realtime_status || pData.status,
-                    team_id: pData.team_id,
                   };
                 }
               }
@@ -293,18 +269,6 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
                 });
               }
 
-              const relatedTeam = getFirstRecord(profileCard.teams);
-              const teamObj: TeamInfo | null =
-                relatedTeam && typeof relatedTeam.id === 'string' && typeof relatedTeam.name === 'string'
-                  ? {
-                      id: relatedTeam.id,
-                      name: relatedTeam.name,
-                      description: typeof relatedTeam.description === 'string' ? relatedTeam.description : null,
-                      owner_id: typeof relatedTeam.owner_id === 'string' ? relatedTeam.owner_id : undefined,
-                      created_at: typeof relatedTeam.created_at === 'string' ? relatedTeam.created_at : undefined,
-                    }
-                  : null;
-
               fetchedProfile = {
                 id: profileCard.id,
                 user_id: profileCard.user_id,
@@ -314,8 +278,6 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
                 communication_style: profileCard.communication_style,
                 consultation_style: profileCard.consultation_style,
                 realtime_status: profileCard.realtime_status,
-                team_id: profileCard.team_id,
-                team: teamObj,
                 tags,
               };
             }
@@ -338,7 +300,6 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
           consultationStyle: initialProfile?.consultationStyle,
           realtimeStatus: initialProfile?.realtimeStatus,
           tags: initialProfile?.tags || [],
-          team_id: propTeamId || initialProfile?.team_id || null,
         });
       } else if (!initialProfile) {
         // プロフィールが見つからない場合
@@ -361,15 +322,13 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     } finally {
       setLoadingProfile(false);
     }
-  }, [effectiveUserId, initialProfile, profileName, propTeamId]);
+  }, [effectiveUserId, initialProfile, profileName]);
 
   useEffect(() => {
     void Promise.resolve().then(fetchProfileData);
   }, [fetchProfileData]);
 
-  // 3. 個人メモ & チーム情報の追加データ取得 (ステップ4)
-  const effectiveTeamId = propTeamId ?? profile?.team_id ?? profile?.teamId;
-
+  // 3. 個人メモの追加データ取得
   const fetchAdditionalData = useCallback(async () => {
     if (!effectiveUserId) {
       setLoadingAdditionalData(false);
@@ -474,52 +433,6 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
         setPrivateNote(null);
       }
 
-      // ---------------------------------------------------------
-      // 2. チーム情報の取得 (teamIdが存在する場合)
-      // ---------------------------------------------------------
-      if (effectiveTeamId) {
-        let teamData: TeamInfo | null = null;
-
-        // 2-1. Edge Function 'teams' を試みる
-        if (edgeFunctionsBaseUrl && accessToken) {
-          try {
-            const teamApiUrl = `${edgeFunctionsBaseUrl}/teams/${effectiveTeamId}`;
-            const response = await fetch(teamApiUrl, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-            });
-
-            if (response.ok) {
-              const resJson = await response.json();
-              if (resJson && resJson.id) {
-                teamData = resJson;
-              }
-            }
-          } catch (funcErr) {
-            console.warn('Edge Function teams failed, trying direct query:', funcErr);
-          }
-        }
-
-        // 2-2. フォールバック: teams テーブル直接クエリ (有効なUUIDの場合のみクエリ)
-        if (!teamData && isValidUuid(effectiveTeamId)) {
-          const { data: teamRow, error: teamDbError } = await supabase
-            .from('teams')
-            .select('*')
-            .eq('id', effectiveTeamId)
-            .maybeSingle();
-
-          if (!teamDbError && teamRow) {
-            teamData = teamRow as TeamInfo;
-          }
-        }
-
-        setTeamInfo(teamData);
-      } else {
-        setTeamInfo(null);
-      }
     } catch (err: unknown) {
       console.error('Error fetching additional profile data:', err);
       setErrorAdditionalData(
@@ -528,7 +441,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     } finally {
       setLoadingAdditionalData(false);
     }
-  }, [effectiveUserId, viewerUserId, effectiveTeamId]);
+  }, [effectiveUserId, viewerUserId]);
 
   useEffect(() => {
     void Promise.resolve().then(fetchAdditionalData);
@@ -775,7 +688,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
         )}
 
         {/* ========================================================= */}
-        {/* ステップ4: 追加データ（個人メモ & チーム情報）セクション */}
+        {/* ステップ4: 追加データ（個人メモ）セクション */}
         {/* ========================================================= */}
         {loadingAdditionalData && (
           <div className="text-center py-4 text-xs text-gray-500 border-t border-gray-100 dark:border-gray-700 mt-4">
@@ -868,35 +781,6 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
               )}
             </div>
 
-            {/* チーム情報セクション (Team Information) */}
-            <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
-              <h3 className="text-base font-bold text-gray-800 dark:text-gray-200 mb-3">
-                Team Information
-              </h3>
-              {teamInfo ? (
-                <div className="flex items-center space-x-3.5 bg-gray-50 dark:bg-gray-900/40 p-4 rounded-xl border border-gray-100 dark:border-gray-700/60 shadow-xs">
-                  <div className="flex-shrink-0 w-11 h-11 bg-gradient-to-tr from-indigo-600 to-indigo-400 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
-                    {teamInfo.name ? teamInfo.name.charAt(0).toUpperCase() : 'T'}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-snug">
-                      {teamInfo.name}
-                    </p>
-                    {teamInfo.description ? (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
-                        {teamInfo.description}
-                      </p>
-                    ) : (
-                      <p className="text-xs text-gray-400 italic mt-0.5">説明文なし</p>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-500 text-xs italic">
-                  This user is not associated with any team.
-                </p>
-              )}
-            </div>
           </>
         )}
       </div>

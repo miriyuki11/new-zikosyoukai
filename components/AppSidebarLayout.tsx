@@ -5,9 +5,6 @@ import { usePathname } from 'next/navigation';
 import { UserPlus } from 'lucide-react';
 import { SlackConnectButton } from '@/src/components/integrations/SlackConnectButton';
 
-const CHANNELS = ['general', 'development', 'design'];
-const TEAMS = ['開発チーム', 'デザインチーム', '営業チーム'];
-
 export default function AppSidebarLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -30,21 +27,6 @@ export default function AppSidebarLayout({
             <div className="workspace-subtitle">ワークスペース</div>
           </div>
         </Link>
-
-        <div className="side-section-title">チャンネル</div>
-        {CHANNELS.map((channel) => (
-          <div className="side-item app-sidebar-static-item" key={channel}>
-            # {channel}
-          </div>
-        ))}
-
-        <div className="side-section-title">チーム</div>
-        {TEAMS.map((team, index) => (
-          <div className="side-item app-sidebar-static-item" key={team}>
-            <span className={`team-dot ${['green', 'blue', 'purple'][index]}`} />
-            {team}
-          </div>
-        ))}
 
         <div className="side-section-title">プロフィール</div>
         <Link href="/profile/settings" className="side-item">

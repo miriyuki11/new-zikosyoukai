@@ -21,12 +21,6 @@ export type ProfileTag = {
   } | null;
 };
 
-export type TeamInfo = {
-  id: string;
-  name: string;
-  description?: string | null;
-};
-
 export type ProfileCard = {
   id?: string;
   user_id?: string;
@@ -37,8 +31,6 @@ export type ProfileCard = {
   consultation_style?: string | null;
   free_description?: string | null;
   realtime_status?: string | null;
-  team_id?: string | null;
-  team?: TeamInfo | null;
   created_at?: string;
   updated_at?: string;
   tags?: ProfileTag[];
@@ -58,7 +50,6 @@ export type ProfileInput = {
   consultation_style?: string | null;
   free_description?: string | null;
   realtime_status?: string | null;
-  team_id?: string | null;
   tag_ids?: string[];
   username?: string;
   full_name?: string | null;

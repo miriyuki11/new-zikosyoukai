@@ -48,7 +48,6 @@ export const profileSchema = z.object({
   consultation_style: z.string().max(1000, "相談スタイルは1000文字以内で入力してください").optional().nullable(),
   free_description: z.string().max(2000, "自由記述は2000文字以内で入力してください").optional().nullable(),
   realtime_status: z.string().max(200, "ステータスは200文字以内で入力してください").optional().nullable(),
-  team_id: z.string().uuid("有効なUUID形式のteam_idを指定してください").optional().nullable(),
   tag_ids: z.array(z.string().uuid("各タグIDは有効なUUID形式である必要があります")).optional(),
   username: z.string().min(1, "ユーザー名は1文字以上で入力してください").optional(),
   full_name: z.string().optional().nullable(),
@@ -197,7 +196,7 @@ Deno.serve(async (req: Request) => {
           url.searchParams.get("user_id") ||
           currentUserId;
 
-        // profile_cards テーブル、関連タグ（分類・色属性含む）、所属チームを取得
+        // profile_cards テーブルと関連タグを取得
         const { data: cards, error: fetchError } = await supabase
           .from("profile_cards")
           .select(`
@@ -211,17 +210,11 @@ Deno.serve(async (req: Request) => {
             consultation_style,
             free_description,
             realtime_status,
-            team_id,
             slug,
             is_public,
             public_fields,
             created_at,
             updated_at,
-            teams:team_id (
-              id,
-              name,
-              description
-            ),
             profile_card_tags (
               profile_tag_id,
               profile_tags (
@@ -266,7 +259,6 @@ Deno.serve(async (req: Request) => {
           profile: {
             ...card,
             tags,
-            team: card.teams ?? null,
             // 互換性および表示用のフィールド
             bio: card.self_introduction,
             username:
@@ -330,7 +322,6 @@ Deno.serve(async (req: Request) => {
               consultation_style: data.consultation_style ?? null,
               free_description: data.free_description ?? null,
               realtime_status: data.realtime_status ?? null,
-              team_id: data.team_id ?? null,
               slug: data.slug ?? null,
               is_public: data.is_public ?? false,
               public_fields: data.public_fields ?? [],
@@ -356,7 +347,6 @@ Deno.serve(async (req: Request) => {
               consultation_style: data.consultation_style ?? null,
               free_description: data.free_description ?? null,
               realtime_status: data.realtime_status ?? null,
-              team_id: data.team_id ?? null,
               slug: data.slug ?? null,
               is_public: data.is_public ?? false,
               public_fields: data.public_fields ?? [],
@@ -401,7 +391,7 @@ Deno.serve(async (req: Request) => {
           });
         }
 
-        // 最新のプロフィール情報（チーム・タグ・分類情報付き）を取得して返却
+        // 最新のプロフィール情報（タグ・分類情報付き）を取得して返却
         const { data: savedDetail } = await supabase
           .from("profile_cards")
           .select(`
@@ -413,17 +403,11 @@ Deno.serve(async (req: Request) => {
             consultation_style,
             free_description,
             realtime_status,
-            team_id,
             slug,
             is_public,
             public_fields,
             created_at,
             updated_at,
-            teams:team_id (
-              id,
-              name,
-              description
-            ),
             profile_card_tags (
               profile_tag_id,
               profile_tags (
@@ -450,7 +434,6 @@ Deno.serve(async (req: Request) => {
             profile: {
               ...savedDetail,
               tags: formattedTags,
-              team: savedDetail?.teams ?? null,
               bio: savedDetail?.self_introduction,
             },
           },
@@ -501,7 +484,6 @@ Deno.serve(async (req: Request) => {
               consultation_style: data.consultation_style ?? null,
               free_description: data.free_description ?? null,
               realtime_status: data.realtime_status ?? null,
-              team_id: data.team_id ?? null,
               slug: data.slug ?? null,
               is_public: data.is_public ?? false,
               public_fields: data.public_fields ?? [],
@@ -528,7 +510,6 @@ Deno.serve(async (req: Request) => {
           if (data.consultation_style !== undefined) updatePayload.consultation_style = data.consultation_style;
           if (data.free_description !== undefined) updatePayload.free_description = data.free_description;
           if (data.realtime_status !== undefined) updatePayload.realtime_status = data.realtime_status;
-          if (data.team_id !== undefined) updatePayload.team_id = data.team_id;
           if (data.slug !== undefined) updatePayload.slug = data.slug;
           if (data.is_public !== undefined) updatePayload.is_public = data.is_public;
           if (data.public_fields !== undefined) updatePayload.public_fields = data.public_fields;
@@ -570,7 +551,7 @@ Deno.serve(async (req: Request) => {
           });
         }
 
-        // 最新のプロフィール情報（チーム・タグ・分類情報付き）を取得して返却
+        // 最新のプロフィール情報（タグ・分類情報付き）を取得して返却
         const { data: updatedCard } = await supabase
           .from("profile_cards")
           .select(`
@@ -582,17 +563,11 @@ Deno.serve(async (req: Request) => {
             consultation_style,
             free_description,
             realtime_status,
-            team_id,
             slug,
             is_public,
             public_fields,
             created_at,
             updated_at,
-            teams:team_id (
-              id,
-              name,
-              description
-            ),
             profile_card_tags (
               profile_tag_id,
               profile_tags (
@@ -619,7 +594,6 @@ Deno.serve(async (req: Request) => {
             profile: {
               ...updatedCard,
               tags: formattedTags,
-              team: updatedCard?.teams ?? null,
               bio: updatedCard?.self_introduction,
             },
           },

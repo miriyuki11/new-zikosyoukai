@@ -1,7 +1,6 @@
 import React from 'react';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { ArrowLeft, UserCircle2 } from 'lucide-react';
+import { UserCircle2 } from 'lucide-react';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { Profile } from '@/types/profile';
 import ProfileSettingsForm from './ProfileSettingsForm';
@@ -60,17 +59,6 @@ export default async function ProfileSettingsPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-indigo-50/30 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        {/* ナビゲーション */}
-        <div className="mb-6">
-          <Link
-            href="/profile"
-            className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors group"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            プロフィール画面に戻る
-          </Link>
-        </div>
-
         {/* メインカード */}
         <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
           {/* ヘッダー */}

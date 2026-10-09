@@ -4,7 +4,7 @@ async function main() {
   const text = await res.text();
 
   const hasHeader = text.includes('メンバープロフィール');
-  const hasDescription = text.includes('ここにメンバーのプロフィール情報（自己紹介、技術、スタンス、スタイル、ステータス、タグ、チーム情報など）が表示されます。');
+  const hasDescription = text.includes('ここにメンバーのプロフィール情報（自己紹介、技術、スタンス、スタイル、ステータス、タグなど）が表示されます。');
   const hasTailwindClasses = text.includes('p-6 bg-white shadow-xl rounded-lg max-w-md mx-auto my-8 border border-gray-200');
 
   console.log('✓ Heading found:', hasHeader);

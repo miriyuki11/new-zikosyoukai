@@ -34,13 +34,7 @@ async function main() {
     'ここにプロフィールカードのUIコンポーネントが表示されます。'
   ]);
 
-  await verifyUrl('http://localhost:3000/team/sample-team-id', [
-    'チームページ: sample-team-id',
-    'ここにチームプロフィールカードのUIコンポーネントが表示されます。'
-  ]);
-
   await verifyUrl('http://localhost:3000/images/default-profile-ogp.jpg');
-  await verifyUrl('http://localhost:3000/images/default-team-ogp.jpg');
 }
 
 main().catch(console.error);

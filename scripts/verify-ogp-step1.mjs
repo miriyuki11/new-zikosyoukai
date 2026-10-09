@@ -18,14 +18,11 @@ async function testUrl(url) {
 
   // 画面表示テキストの検証
   const hasProfileText = html.includes('プロフィールOGPページ - ID:');
-  const hasTeamText = html.includes('チームOGPページ - ID:');
   console.log(`Page text "プロフィールOGPページ - ID:": ${hasProfileText ? '✅ FOUND' : 'N/A'}`);
-  console.log(`Page text "チームOGPページ - ID:": ${hasTeamText ? '✅ FOUND' : 'N/A'}`);
 }
 
 async function main() {
   await testUrl('http://localhost:3000/profile/123');
-  await testUrl('http://localhost:3000/team/456');
 }
 
 main().catch(console.error);

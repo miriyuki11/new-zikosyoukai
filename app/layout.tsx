@@ -3,8 +3,8 @@ import AppSidebarLayout from "@/components/AppSidebarLayout";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Team Portfolio",
-  description: "チーム・プロフィール管理画面",
+  title: "My Profile",
+  description: "プロフィール管理画面",
 };
 
 export default function RootLayout({
